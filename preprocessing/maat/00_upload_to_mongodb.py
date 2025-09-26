@@ -1,21 +1,18 @@
+from os import environ
 import pymongo
-import argparse
 import json
 from tqdm import tqdm
 
 def main():
-    arg_parser = argparse.ArgumentParser()
-    arg_parser.add_argument("-d", "--database", required=True)
-    arg_parser.add_argument("--mongo_database", required=True)
-    arg_parser.add_argument("--mongo_collection", required=True)
-
-    args = arg_parser.parse_args()
+    maat_filename = environ.get("MAAT_FILENAME", "maat.json")
+    mongo_database = environ.get("MONGO_DATABASE", "papyri")
+    mongo_collection = environ.get("MONGO_COLLECTION", "maat")
     
     client = pymongo.MongoClient()
-    collection = client.get_database(args.mongo_database).get_collection(args.mongo_collection)
+    collection = client.get_database(mongo_database).get_collection(mongo_collection)
     
     papyri_dataset = []
-    with open(args.database) as f:
+    with open(maat_filename) as f:
         for line in tqdm(f):
             papyri_dataset.append(json.loads(line))
 
