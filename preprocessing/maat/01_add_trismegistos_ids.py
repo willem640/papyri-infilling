@@ -16,6 +16,7 @@ def main():
 
     client = pymongo.MongoClient()
     collection = client.get_database(mongo_database).get_collection(mongo_collection)
+
     for ddbdp_epidoc in tqdm(Path(duke_databank_epidocs).rglob("*.xml")):
         doc = EpiDoc(ddbdp_epidoc)
         idnos = doc.file_desc.publication_stmt.idnos
@@ -28,7 +29,7 @@ def main():
         ddbdp_idno = get_exception(ddbdp_idno) # sometimes the id in MAAT/papyri.info can be different so we need to translate between them 
         tm_idno = next((idno.value for idno in idnos if idno.type == "TM"), None) # If no TM id is available, just don't set it for now, TODO 
         hgv_idno = next((idno.value for idno in idnos if idno.type == "HGV"), None) 
-        collection.update_many({'file_id': ddbdp_idno}, {'$set': {'tm_id': tm_idno, 'hdv_id': hgv_idno}})
+        collection.update_many({'file_id': ddbdp_idno}, {'$set': {'tm_id': tm_idno, 'hgv_id': hgv_idno}})
 
 if __name__=="__main__":
     main()
