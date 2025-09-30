@@ -19,7 +19,7 @@ def main():
     
     for papyrus in tqdm(papyri_dataset):
         # Ignore Latin texts and ignore anything that isn't a papyrus (ostrakon, wood, etc)
-        if papyrus["language"] != "grc" or papyrus["material"] != "papyrus":
+        if papyrus["language"] != "grc" or papyrus["material"] != "papyrus" or papyrus["corpus_id"] == "DCLP":
             continue
         try:
             collection.insert_one(papyrus)
