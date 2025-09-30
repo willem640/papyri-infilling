@@ -7,6 +7,8 @@ from tqdm import tqdm
 
 from pyepidoc import EpiDoc
 
+# TODO what if there are multiple places?
+
 def main():
     mongo_database = environ.get("MONGO_DATABASE", "papyri")
     mongo_collection = environ.get("MONGO_COLLECTION", "maat")
@@ -26,14 +28,20 @@ def main():
             continue
         orig_place = get_location(doc)
         date_range = doc.daterange
+        text_classes = get_text_classes(doc)
         update = {
-            'orig_place': orig_place
+            'orig_place': orig_place,
+            'text_classes': text_classes
         }
         if date_range is not None and date_range != (None, None):
-            update['date_range'] = date_range
+            update['date_range'] = {'min': date_range[0], 'max': date_range[1]}
         collection.update_many(
                 {'hgv_id' : hgv_idno }, \
                         {'$set': update})
+
+def get_text_classes(doc):
+    text_classes = doc.xpath('//ns:textClass/ns:keywords[@scheme="hgv"]/ns:term/text()')
+    return text_classes
 
 def get_location(doc):
     # HGV has a provenance section with a trismegistos places reference, which is better than the string name provided by doc.orig_place
