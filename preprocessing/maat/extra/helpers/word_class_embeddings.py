@@ -3,6 +3,7 @@ import json
 import random
 from typing import List, Tuple 
 from collections import Counter
+from scipy.stats import norm
 import spacy
 from sklearn.metrics.pairwise import cosine_distances
 from sklearn.cluster import AgglomerativeClustering, KMeans
@@ -35,7 +36,7 @@ def get_embeddings(word_classes: List[str], model: str = "de_core_news_lg") -> L
             # If there was no noun, just use the first token that has a vector
             for token in doc:
                 if token.has_vector:
-                    word_classes_with_count_embedding_and_token.append((str(doc), word_classes_counter[str(doc)], str(doc[0]), doc[0].vector))
+                    word_classes_with_count_embedding_and_token.append((str(doc), word_classes_counter[str(doc)], str(token), token.vector))
             # If we don't find a token with a vector, quietly continue
 
     # Collect only one result for every token, and with it collect the most common word class as an example.
@@ -50,19 +51,32 @@ def get_embeddings(word_classes: List[str], model: str = "de_core_news_lg") -> L
             continue
         results_dict[token] = (word_class, count, embedding)
     
-    results = [(example, embedding, _) for _, (example, _, embedding) in results_dict.items()] 
+    results = [(example, embedding, count) for _, (example, count, embedding) in results_dict.items()] 
     return results
-       
+    
+
+def normalize_vector(vector: Floats1d) -> Floats1d:
+    norm = np.linalg.norm(vector)
+    if norm == 0:
+        return vector
+    
+    return vector / norm
+
+
 def compute_clusters(words_and_embeddings: List[Tuple[str, Floats1d, int]], n_clusters: int) -> List[Tuple[int, str, Floats1d, int]]:
     words, embeddings, counts = zip(*words_and_embeddings)
     print("Calculating distance matrix...")
-    distance_matrix = cosine_distances(embeddings)
+
+    embeddings = [normalize_vector(embedding) for embedding in embeddings]
+
+#   distance_matrix = cosine_distances(embeddings)
     # TODO improve clustering algorithm?
-    clustering = KMeans(
+    clustering = AgglomerativeClustering(
        n_clusters=n_clusters,
+       
     )
     print("Computing clusters...")
-    labels= clustering.fit_predict(distance_matrix)
+    labels= clustering.fit_predict(embeddings)
     
     clusters = []
     for label, word, embedding, count in zip(labels, words, embeddings, counts):
@@ -78,7 +92,7 @@ def visualize(clusters: List[Tuple[int, str, Floats1d, int]], limit: int = 5000,
     labels, words, embeddings, counts = zip(*clusters)
     embeddings_tsne = tsne.fit_transform(np.array(embeddings))
     
-    
+     
 
     num_clusters = len(set(labels))
     colors = [f"#{random.randrange(0x1000000):06x}" for _ in range(num_clusters)]
@@ -88,11 +102,11 @@ def visualize(clusters: List[Tuple[int, str, Floats1d, int]], limit: int = 5000,
     cluster_labels = {}
     for label in set(labels):
         example_for_legend = next(clustered_word[2] for clustered_word in final_clusters if clustered_word[0] == label)
-        cluster_labels[label] = f"{example_for_legend} - {label}"
+        cluster_labels[label] = example_for_legend
     
-
-    for label, (x,y), word, _ in final_clusters:
-        plt.scatter(x,y, color=colors[label % len(colors)], label=cluster_labels[label])
+    for label, (x,y), word, count in final_clusters:
+        coll = plt.scatter(x,y, color=colors[label % len(colors)], label=cluster_labels[label])
+        coll.cust_label = f"Word: {word}\nCount: {count}\nCategory: "
     
     if num_labelled > len(words):
         num_labelled = len(words)
@@ -101,8 +115,18 @@ def visualize(clusters: List[Tuple[int, str, Floats1d, int]], limit: int = 5000,
         plt.text(x, y, word)
     
     legend_without_duplicate_labels(plt)
-    cursor(hover=True)
+    cursor(hover=True).connect(
+        "add", on_label_add)
     plt.show()
+
+
+# WARNING: this will not produce nice results if plt.scatter is called with a list instead of separate points.
+# It works by attaching a custom property to the artist. If plt.scatter is called separately for every point, it will create many artists which can have a custom property attached.
+def on_label_add(sel):
+    custom_label = sel.artist.cust_label
+    annotation_text = sel.annotation.get_text()
+    sel.annotation.set_text(custom_label + annotation_text)
+
 
 # https://stackoverflow.com/questions/19385639/duplicate-items-in-legend-in-matplotlib
 def legend_without_duplicate_labels(figure):
