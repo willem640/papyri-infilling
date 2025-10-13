@@ -32,8 +32,8 @@ def visualize_dates(collection: Collection):
     print("Getting min/max dates from the database...")
     dates = list(collection.find({}, {"date_range": 1, "_id": 0}))
     date_ranges = [date.get("date_range", {}) for date in dates]
-    min_dates = [int(min_date) for date_range in date_ranges if (min_date := date_range.get("min")) is not None]
-    max_dates = [int(max_date) for date_range in date_ranges if (max_date := date_range.get("max")) is not None]
+    min_dates = [int(min_date["y"]) for date_range in date_ranges if (min_date := date_range.get("min")) is not None]
+    max_dates = [int(max_date["y"]) for date_range in date_ranges if (max_date := date_range.get("max")) is not None]
     mean_dates = [int((max_date + min_date) / 2) for (min_date, max_date) in zip(min_dates, max_dates)]
 
     fig, axs = plt.subplots(1, 3, sharex=True, sharey=True)
@@ -81,11 +81,11 @@ def visualize_text_class_clustering(collection: Collection):
     all_classes = [text_classes for db_record in all_classes_cursor if (text_classes := db_record.get("text_classes")) is not None]
     all_classes_flat = []
     for classes_single_papyrus in all_classes:
-        all_classes_flat.extend(classes_single_papyrus)
-#        if len(classes_single_papyrus) > 0:
-#            all_classes_flat.append(classes_single_papyrus[0])
+#        all_classes_flat.extend(classes_single_papyrus)
+        if len(classes_single_papyrus) > 0:
+            all_classes_flat.append(classes_single_papyrus[0])
 
-    visualize_word_class_clusters(all_classes_flat, num_clusters=40, visualize_limit=50000, num_labels=25)
+    visualize_word_class_clusters(all_classes_flat, num_clusters=10, visualize_limit=50000, num_labels=35)
 
 if __name__=="__main__":
     main()

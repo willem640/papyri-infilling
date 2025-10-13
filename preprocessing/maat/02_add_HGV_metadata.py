@@ -1,4 +1,3 @@
-from pyepidoc.xml.errors import handle_xmlsyntaxerror
 import pymongo
 import re
 from os import environ
@@ -27,7 +26,7 @@ def main():
             print(f"File does not have a filename: {idnos}")
             continue
         orig_place = get_location(doc)
-        date_range = doc.daterange
+        date_range = get_daterange(doc)
         text_classes = get_text_classes(doc)
         update = {
             'orig_place': orig_place,
@@ -38,6 +37,45 @@ def main():
         collection.update_many(
                 {'hgv_id' : hgv_idno }, \
                         {'$set': update})
+def get_daterange(doc):
+    if (orig_date := doc.orig_date) is None:
+        return None
+
+
+    # This code is mostly the same as pyepidoc's EpiDoc.date_range, but it supports dashes
+    not_before_custom = orig_date.get_attrib('notBefore-custom') 
+    not_before = orig_date.get_attrib('notBefore')
+    
+    not_before = not_before or not_before_custom
+
+    not_after_custom = orig_date.get_attrib('notAfter-custom')
+    not_after = orig_date.get_attrib('notAfter')
+    
+    not_after = not_after or not_after_custom
+    
+    if not_after is not None:
+        not_after = split_date(not_after)
+
+    if not_before is not None:
+        not_before = split_date(not_before)
+
+    if not_after is None:
+        return (not_before, not_before)
+    elif not_before is None:
+        return (not_after, not_after)
+    elif not_before is None and not_after is None:
+        return None
+    else:
+        return (not_before, not_after)
+
+def split_date(date: str) -> dict[str, str]:
+    positive_date = date.removeprefix("-")
+    components = positive_date.split("-", maxsplit=3)
+    split_date = {c_name: int(c) for c_name, c in zip(["y", "m", "d"], components)}
+    if date.startswith("-"):
+        split_date["y"] = -split_date["y"]
+
+    return split_date
 
 def get_text_classes(doc):
     text_classes = doc.xpath('//ns:textClass/ns:keywords[@scheme="hgv"]/ns:term/text()')
