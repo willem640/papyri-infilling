@@ -8,7 +8,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   68.54 
-SPEED               92    
+SPEED               460   
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -28,7 +28,8 @@ Objective Statement              0.91
 Recording of Information         0.98
 Transmission of Information      0.90
 
-``` echo 
+```
+
 ### models/cpu_cbow_accuracy/model-best
 
 ```
@@ -39,7 +40,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   77.53 
-SPEED               436   
+SPEED               423   
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -59,7 +60,8 @@ Objective Statement              0.88
 Recording of Information         0.99
 Transmission of Information      0.80
 
-``` echo 
+```
+
 ### models/cpu_cbow_efficiency_2/model-best
 
 ```
@@ -70,7 +72,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   83.35 
-SPEED               4663  
+SPEED               4683  
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -90,7 +92,8 @@ Objective Statement              0.94
 Recording of Information         0.99
 Transmission of Information      0.95
 
-``` echo 
+```
+
 ### models/cpu_cbow_efficiency_concat/model-best
 
 ```
@@ -101,7 +104,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   78.62 
-SPEED               4236  
+SPEED               5374  
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -121,7 +124,8 @@ Objective Statement              0.92
 Recording of Information         0.98
 Transmission of Information      0.88
 
-``` echo 
+```
+
 ### models/cpu_cbow_efficiency/model-best
 
 ```
@@ -132,7 +136,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   75.80 
-SPEED               4825  
+SPEED               5499  
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -152,7 +156,8 @@ Objective Statement              0.93
 Recording of Information         0.96
 Transmission of Information      0.90
 
-``` echo 
+```
+
 ### models/cpu_parametricattn_concat/model-best
 
 ```
@@ -163,7 +168,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   78.84 
-SPEED               370   
+SPEED               461   
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -183,7 +188,8 @@ Objective Statement              0.93
 Recording of Information         1.00
 Transmission of Information      0.91
 
-``` echo 
+```
+
 ### models/cpu_parametricattn__nostatic_concat/model-best
 
 ```
@@ -194,7 +200,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   75.21 
-SPEED               406   
+SPEED               466   
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -214,7 +220,8 @@ Objective Statement              0.92
 Recording of Information         0.98
 Transmission of Information      0.88
 
-``` echo 
+```
+
 ### models/gpu_accuracy_concat/model-best
 
 ```
@@ -225,7 +232,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   79.50 
-SPEED               262   
+SPEED               268   
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -245,7 +252,8 @@ Objective Statement              0.94
 Recording of Information         0.97
 Transmission of Information      0.94
 
-``` echo 
+```
+
 ### models/gpu_efficiency_concat_half_trained/model-best
 
 ```
@@ -256,7 +264,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   81.59 
-SPEED               252   
+SPEED               275   
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -276,7 +284,8 @@ Objective Statement              0.94
 Recording of Information         1.00
 Transmission of Information      0.86
 
-``` echo 
+```
+
 ### models/gpu_efficiency_concat/model-best
 
 ```
@@ -287,7 +296,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   82.02 
-SPEED               272   
+SPEED               278   
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -307,7 +316,8 @@ Objective Statement              0.94
 Recording of Information         0.94
 Transmission of Information      0.92
 
-``` echo 
+```
+
 ### models/gpu_efficiency_concat_no_flash_attn_exp/model-best
 
 ```
@@ -318,7 +328,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   82.04 
-SPEED               280   
+SPEED               274   
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -338,7 +348,8 @@ Objective Statement              0.92
 Recording of Information         0.96
 Transmission of Information      0.87
 
-``` echo 
+```
+
 ### models/gpu_efficiency/model-best
 
 ```
@@ -349,7 +360,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   79.29 
-SPEED               268   
+SPEED               277   
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -369,7 +380,8 @@ Objective Statement              0.92
 Recording of Information         0.95
 Transmission of Information      0.74
 
-``` echo 
+```
+
 ### models/gpu_parametricattn_concat/model-best
 
 ```
@@ -380,7 +392,7 @@ Current torch device: 0
 
 TOK                 100.00
 TEXTCAT (macro F)   81.70 
-SPEED               277   
+SPEED               274   
 
 [1m
 =========================== Textcat F (per label) ===========================[0m
@@ -400,4 +412,5 @@ Objective Statement              0.94
 Recording of Information         0.96
 Transmission of Information      0.91
 
-``` echo 
+```
+
