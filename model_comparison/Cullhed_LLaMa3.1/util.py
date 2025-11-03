@@ -88,8 +88,20 @@ def strip_accents_and_breathing(text: str) -> str:
    
 
 def mask_emendations(text: str) -> str:
-    # [αβγ] -> [...]
+    #TODO: this should strip spaces!
     number_of_subs_made = 999 # bogus value to start loop
+    while number_of_subs_made != 0:
+        # matches:
+        #   - [, followed by any number of Greek letters and/or spaces
+        #   - a single \s, i.e. space or other whitespace
+        #   - any number of Greek letters and/or spaces, followed by ]
+        # Put everything back except the space in the middle
+        # Do this repeatedly
+        # I.e.: [ γινωσκειν σε θελω] (match one of the spaces and their surrounding characters) -> [ γινωσκειν σεθελω] -> [ γινωσκεινσεθελω] -> [γινωσκεινσεθελω]
+        text, number_of_subs_made = re.subn(r"(\[[α-ωΑ-Ω\s]*)\s([α-ωΑ-Ω\s]*\])", r"\1\2", text)
+    
+    # [αβγ] -> [...]
+    number_of_subs_made = 999 
     while number_of_subs_made != 0:
         # match [ following any number of dots, a single character and then any number of Greek characters, finally followed by ]
         # repeatedly call it:
