@@ -13,7 +13,7 @@ def main():
     client = pymongo.MongoClient()
     collection = client.get_database(mongo_database).get_collection(mongo_collection)
     
-    plt.rcParams.update({'font.size': 22})
+    plt.rcParams.update({'font.size': 16})
 
     viz_type = input("Please select which data to visualize:\n  1. Dates\n  2. Text class frequencies\n  3. Text class embedding clustering (computation heavy)\n [1-3]: ")
     match viz_type:
