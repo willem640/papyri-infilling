@@ -13,12 +13,12 @@ tokenizer.add_special_tokens({"additional_special_tokens": extra_ids})
 test_text = """λοιπὸν δεχόμενος<extra_id_0> παρόντα γράμματα"""
 test_labels = """<extra_id_0> τὰ "<extra_id_1>"""
 
-def try_fill_mask(model, tokenizer, masked_input, num_results=5):
+def try_fill_mask(model, tokenizer, masked_input, num_results=10):
     input_ids = tokenizer(masked_input, return_tensors="pt", add_special_tokens=True).input_ids
 
 #    for inp_id in input_ids[0]:
 #        print(tokenizer.decode(inp_id))
-    outputs = model.generate(input_ids, num_beams=2 * num_results, num_return_sequences=num_results, diversity_penalty=1.5)
+    outputs = model.generate(input_ids, num_beams=10 * num_results, num_return_sequences=num_results, diversity_penalty=1.5, early_stopping=True)
     
     text_outputs = [tokenizer.decode(output) for output in outputs]
     infillings = []
