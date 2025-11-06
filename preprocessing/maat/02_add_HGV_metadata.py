@@ -28,9 +28,11 @@ def main():
         orig_place = get_location(doc)
         date_range = get_daterange(doc)
         text_classes = get_text_classes(doc)
+        hgv_title = doc.title_stmt.text_desc_compressed_whitespace.strip()
         update = {
             'orig_place': orig_place,
-            'text_classes': text_classes
+            'text_classes': text_classes,
+            'hgv_title': hgv_title
         }
         if date_range is not None and date_range != (None, None):
             update['date_range'] = {'min': date_range[0], 'max': date_range[1]}
