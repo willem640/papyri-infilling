@@ -9,8 +9,9 @@ from spacy.language import Language
 from spacy.tokens import DocBin
 from tqdm import tqdm
 
+# TODO reproducible test/dev/train sets, plus ensure correct distribution in test/dev/train?
+
 def main():
-    grammateus_path = environ.get("GRAMMATEUS_CSV", "grammateus.csv")
     mongo_database = environ.get("MONGO_DATABASE", "papyri")
     mongo_collection = environ.get("MONGO_COLLECTION", "maat")
     
@@ -28,15 +29,18 @@ def main():
                 for terms, grammateus_type in types_and_classes]
    
 
-    random.shuffle(types_and_classes_preprocessed)
+    random.Random(42).shuffle(types_and_classes_preprocessed)
 
-    split_idx = int(len(types_and_classes_preprocessed) * 0.1)
-    train_data = types_and_classes_preprocessed[split_idx:]
-    test_data = types_and_classes_preprocessed[:split_idx]
+    split_idx_test = int(len(types_and_classes_preprocessed) * 0.1)
+    split_idx_dev = int(len(types_and_classes_preprocessed) * 0.2)
+    train_data = types_and_classes_preprocessed[split_idx_dev:]
+    dev_data = types_and_classes_preprocessed[split_idx_test:split_idx_dev]
+    test_data = types_and_classes_preprocessed[:split_idx_test]
 
 
-    print(f"Total: {len(types_and_classes_preprocessed)} - Train:  {len(train_data)} - Test: {len(test_data)}")
+    print(f"Total: {len(types_and_classes_preprocessed)} - Train:  {len(train_data)} - Dev: {len(dev_data)} - Test: {len(test_data)}")
     write_to_disk(train_data, "train_concat.spacy", nlp)
+    write_to_disk(dev_data, "dev_concat.spacy", nlp)
     write_to_disk(test_data, "test_concat.spacy", nlp)
 
 def write_to_disk(data, filename, nlp: Language):
