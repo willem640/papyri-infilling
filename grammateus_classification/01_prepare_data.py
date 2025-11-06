@@ -25,7 +25,7 @@ def main():
 
     nlp = spacy.blank("de")
 
-    types_and_classes_preprocessed = [(preprocess(terms, nlp), grammateus_type)  
+    types_and_classes_preprocessed = [(preprocess(terms), grammateus_type)  
                 for terms, grammateus_type in types_and_classes]
    
 
@@ -39,14 +39,12 @@ def main():
 
 
     print(f"Total: {len(types_and_classes_preprocessed)} - Train:  {len(train_data)} - Dev: {len(dev_data)} - Test: {len(test_data)}")
-    write_to_disk(train_data, "train_concat.spacy", nlp)
-    write_to_disk(dev_data, "dev_concat.spacy", nlp)
-    write_to_disk(test_data, "test_concat.spacy", nlp)
+    write_to_disk(train_data, "train.spacy", nlp)
+    write_to_disk(dev_data, "dev.spacy", nlp)
+    write_to_disk(test_data, "test.spacy", nlp)
 
 def write_to_disk(data, filename, nlp: Language):
     db = DocBin()
-    docs = []
-    
 
     types = ["Epistolary Exchange", "Objective Statement", "Recording of Information", "Transmission of Information"]
     for doc, label in nlp.pipe(data, as_tuples=True):
@@ -55,16 +53,10 @@ def write_to_disk(data, filename, nlp: Language):
         db.add(doc)
     db.to_disk(filename)
 
-def preprocess(terms, nlp: Language):
-    text = " ".join(terms)
-    tokens = [token.text for token in nlp(text)]
-    
-    tokens = [token for token in tokens if
-              token not in STOP_WORDS and
-              token not in string.punctuation and
-              len(token) > 3]
+def preprocess(terms):
+  
 
-    return " ".join(tokens)
+    return " ".join(terms)
 
 if __name__=="__main__":
 	main()
