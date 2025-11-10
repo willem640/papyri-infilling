@@ -20,11 +20,12 @@ def main():
     client = pymongo.MongoClient()
     collection = client.get_database(mongo_database).get_collection(mongo_collection)
    
-    all_papyri = list(collection.find({'text_classes' : {'$exists': 1}}, {'training_text': 1, 'text_classes': 1, 'id': 1, 'tm_id':1,'_id':0}))
+    all_unlabeled_papyri = list(collection.find({'text_classes' : {'$exists': 1}, 'grammateus_type': {'$exists': 0}}, 
+        {'training_text': 1, 'text_classes': 1, 'hgv_title': 1, 'id': 1, 'tm_id':1,'_id':0}))
 
 
     nlp_blank = spacy.blank('de')
-    all_papyri_preprocessed = [preprocess(papyrus, nlp_blank) for papyrus in all_papyri]
+    all_papyri_preprocessed = [preprocess(papyrus, nlp_blank) for papyrus in all_unlabeled_papyri]
      
     classifier = spacy.load('model/model-best')
 
@@ -58,7 +59,7 @@ def get_cat(cats: Dict[str, float]):
     return max_cat
 
 def preprocess(papyrus, nlp):
-    text_classes = prepare_data.preprocess(papyrus['text_classes'], nlp)
+    text_classes = prepare_data.preprocess(papyrus['text_classes'], papyrus['hgv_title'], nlp)
 
     return (text_classes, papyrus)
 
