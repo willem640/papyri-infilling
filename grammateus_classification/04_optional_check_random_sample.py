@@ -55,9 +55,6 @@ class PapyrusViewer(Vertical):
         #yield Placeholder()
 
 
-    def get_current_label(self):
-        pass
-
     def get_marked_as(self):
         current_correct = self.get_current_correction()
 
@@ -119,12 +116,8 @@ class PapyrusViewer(Vertical):
 
         return True
 
-
     def __init__(self):
         super().__init__()
-        # TODO defer run until load
-        # TODO move previously corrected to front
-        # TODO do I even want a random shuffle?
         with open('./papyri_with_classes.json') as f:
             self.papyri_with_classes = json.load(f)
             random.Random(42).shuffle(self.papyri_with_classes)
@@ -134,6 +127,17 @@ class PapyrusViewer(Vertical):
                 self.checked_papyri = json.load(f)
         except FileNotFoundError:
             self.checked_papyri = []
+        self.set_interval(10, self.save)
+
+    def save(self):
+        print("Saving...")
+        with open('./checked_papyri.json', 'w') as f:
+            json.dump(self.checked_papyri, f)
+        print("Saved checked papyri")
+
+
+    def on_unmount(self,_):
+        self.save()
 
     @property
     def current_papyrus(self):
