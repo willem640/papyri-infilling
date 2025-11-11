@@ -251,7 +251,8 @@ class PapyriCheckerApp(App):
 
     async def action_papyrus_category_modal(self):
         def modal_close(new_cat):
-            self.query_one(PapyrusViewer).set_type(new_cat)
+            if new_cat is not None:
+                self.query_one(PapyrusViewer).set_type(new_cat)
         self.push_screen(ChoosePapyrusTypeModal(GRAMMATEUS_TYPES), modal_close)
 
     def action_mark_as_epistolary(self):
