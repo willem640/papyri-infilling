@@ -1,13 +1,15 @@
 from os import environ
 import random
 import string
+import re
 
 import pymongo
-from spacy.lang.de.stop_words import STOP_WORDS
+from spacy.lang.en.stop_words import STOP_WORDS
 import spacy
 from spacy.language import Language
 from spacy.tokens import DocBin
 from tqdm import tqdm
+from libretranslatepy import LibreTranslateAPI
 
 # TODO reproducible test/dev/train sets, plus ensure correct distribution in test/dev/train?
 
@@ -25,10 +27,10 @@ def main():
     for papyrus in collection.find({'grammateus_type': {'$exists': True}, 'text_classes': {'$exists' : True}}, {'text_classes': 1, 'grammateus_type': 1, 'hgv_title': 1, '_id': 0}):
        types_and_classes.append((papyrus['text_classes'], papyrus['hgv_title'], papyrus['grammateus_type']))
 
-    nlp = spacy.blank("de")
+    nlp = spacy.blank("en")
 
     types_and_classes_preprocessed = [(preprocess(terms, title, nlp), grammateus_type)  
-                for terms, title, grammateus_type in types_and_classes]
+                for terms, title, grammateus_type in tqdm(types_and_classes)]
    
     train_data = []
     dev_data = []
@@ -72,9 +74,12 @@ def write_to_disk(data, filename, nlp: Language):
     db.to_disk(filename)
 
 def preprocess(terms, title, nlp: Language):
-    joined_terms = " ".join(terms)
-    preprocessed_title = remove_punctuation_stopwords(title, nlp)
-    preprocessed_terms = remove_punctuation_stopwords(joined_terms, nlp)
+    joined_terms_translated = " ".join([translate(term, source_lang="de") for term in terms])
+    title_translated = translate(title) if title != 'keiner' else ''
+    preprocessed_title = remove_punctuation_stopwords(title_translated, nlp)
+    preprocessed_terms = remove_punctuation_stopwords(joined_terms_translated, nlp)
+    if (len(preprocessed_title) < 3 or len(preprocessed_terms) < 3) and title != 'keiner':
+        print(f"Terms/Title too short. Title: {title}\tterms: {terms}")
     return f"{preprocessed_title} {preprocessed_terms}"
 
 def remove_punctuation_stopwords(text, nlp: Language):
@@ -85,6 +90,66 @@ def remove_punctuation_stopwords(text, nlp: Language):
               len(token) > 3]
 
     return " ".join(tokens)
+
+def detect_lang(text,
+                possible_langs,
+                api: LibreTranslateAPI,
+                try_backup_options=True):
+
+    detected_langs = api.detect(text)
+
+    possible_langs = list(filter(lambda lang: lang['language'] in possible_langs, detected_langs))
+    
+    if len(possible_langs) == 0:
+        text_lang = None
+        if try_backup_options:
+            text_split = text.strip().split(" ")
+            text_lang = detect_lang(text_split[0], possible_langs, api, try_backup_options=False)
+
+            if text_lang is None:
+                exceptions = {
+                        r"[bB]rief": "de",
+                        r"[qQ]uittung": "de",
+                        r"Bankakt": "de",
+                        r"[aA]kten": "de",
+                        r"[lL]iste": "de",
+                        r"[dD]eklaration": "de",
+                        r"[rR]equête": "fr",
+                        r"[aA]rgent": "fr",
+                        r"Ricevuta": "it",
+                }
+                for pattern, language in exceptions.items():
+                    if re.search(pattern, text):
+                        text_lang = language
+                        break
+
+        if text_lang is None:
+            return None
+        else:
+            # A backup option worked!
+            return text_lang
+
+    text_lang = max(possible_langs, key=lambda lang: lang['confidence'])['language'] 
+
+    return text_lang
+
+def translate(text,
+              source_lang=None,
+              target_lang="en",
+              possible_langs=["en", "de", "fr", "it"],
+              api: LibreTranslateAPI = LibreTranslateAPI("http://127.0.0.1:5000")):
+    if source_lang is None:
+        if (text_lang := detect_lang(text, possible_langs, api)) is None:
+            print(f"Could not find language for \"{text}\", using as-is.")
+            return text
+    else:
+        text_lang = source_lang
+    
+    if text_lang == target_lang:
+        return text
+
+    return api.translate(text, text_lang, target_lang)
+
 
 
 
