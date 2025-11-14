@@ -1,3 +1,7 @@
+#!/usr/bin/env bash
+
+set -Eeuo pipefail
+
 python -m spacy train config_spacy_train.cfg --output model --verbose -g 0
 
 echo "Eval best:"
