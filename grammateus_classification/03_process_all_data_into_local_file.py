@@ -24,7 +24,7 @@ def main():
         {'training_text': 1, 'text_classes': 1, 'hgv_title': 1, 'id': 1, 'tm_id':1,'_id':0}))
 
 
-    nlp_blank = spacy.blank('de')
+    nlp_blank = spacy.blank('grc')
     all_papyri_preprocessed = [preprocess(papyrus, nlp_blank) for papyrus in all_unlabeled_papyri]
      
     classifier = spacy.load('model/model-best')
@@ -59,7 +59,7 @@ def get_cat(cats: Dict[str, float]):
     return max_cat
 
 def preprocess(papyrus, nlp):
-    text_classes = prepare_data.preprocess(papyrus['text_classes'], papyrus['hgv_title'], nlp)
+    text_classes = prepare_data.preprocess(papyrus['text_classes'], papyrus['hgv_title'], papyrus['training_text'], nlp)
 
     return (text_classes, papyrus)
 
