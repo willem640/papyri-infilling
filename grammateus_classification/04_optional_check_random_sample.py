@@ -4,13 +4,13 @@ from textual.app import App
 from textual.containers import Horizontal, HorizontalGroup, HorizontalScroll, Middle, Right, Center, Vertical, VerticalGroup
 from textual.reactive import reactive
 from textual.screen import ModalScreen
-from textual.widgets import Footer, Header, Label, Link, ListItem, ListView
+from textual.widgets import Footer, Header, Input, Label, Link, ListItem, ListView
 
 import json
 import random
 import re
 
-GRAMMATEUS_TYPES = ["Epistolary Exchange", "Objective Statement", "Recording of Information", "Transmission of Information"]
+GRAMMATEUS_TYPES = ["Epistolary Exchange", "Transmission of Information", "Objective Statement", "Recording of Information"]
 
 class PapyrusViewer(Vertical):
     DEFAULT_CSS = """
@@ -25,6 +25,9 @@ class PapyrusViewer(Vertical):
     }
     .manual-border {
         border: heavy purple;
+    }
+    .unclear-border {
+        border: ascii white;
     }
     Label {
         text-wrap: wrap;
@@ -66,6 +69,8 @@ class PapyrusViewer(Vertical):
             return 'Marked incorrect'
         elif current_correct == 'manual':
             return 'Manually set'
+        elif current_correct == 'unclear':
+            return 'Marked as unclear'
         else:
             return "Error checking correct/incorred"
 
@@ -77,6 +82,7 @@ class PapyrusViewer(Vertical):
             ddbdp_id_subbed = ddbdp_id.group(1)[::-1].replace('.', ';', 2)[::-1]
             papyri_info_link = f"https://papyri.info/ddbdp/{ddbdp_id_subbed}"
             return papyri_info_link
+
     def get_header_class(self):
         current_correct = self.get_current_correction()
 
@@ -88,6 +94,8 @@ class PapyrusViewer(Vertical):
             return 'incorrect-border'
         elif current_correct == 'manual':
             return 'manual-border'
+        elif current_correct == 'unclear':
+            return 'unclear-border'
         else:
             return 'neutral-border'
 
@@ -172,11 +180,20 @@ class PapyrusViewer(Vertical):
     def mark_current_incorrect(self):
         self.set_on_checked('correct', False)
 
+    def mark_current_unclear(self):
+        self.set_on_checked('correct', 'unclear')
 
     def set_type(self, new_type):
         self.set_on_checked('correct', 'manual')
         self.set_on_checked('manually_set', True) # correct may be overwritten, this may not
         self.set_on_checked('grammateus_type', new_type)
+
+    def go_to_next_unlabeled(self):
+        while True:
+            if self.get_current_correction() is None:
+                return
+            self.current_papyrus_idx += 1
+
 
 class ChoosePapyrusTypeModal(ModalScreen[str | None]):
     DEFAULT_CSS = """
@@ -228,19 +245,58 @@ class ChoosePapyrusTypeModal(ModalScreen[str | None]):
     def action_cancel(self):
         self.dismiss(None)
 
+class GoToPapyrusModal(ModalScreen[int | None]):
+    DEFAULT_CSS = """
+        GoToPapyrusModal {
+            align: center middle;
+        }
+
+        Input {
+            padding: 2 2;
+        }
+
+        Label {
+            width: 100%;
+            padding: 1 2;
+        }
+    """
+    BINDINGS = [
+            ('escape', 'cancel', 'Cancel (don\'t select anything)')
+    ]
+
+    def compose(self):
+        yield Label("Go to papyrus:")
+        yield Input(type="integer")
+
+    def on_input_submitted(self, message):
+        if message.value == '':
+            self.dismiss(None)
+        else:
+            self.dismiss(int(message.value))
+        
+    def action_cancel(self):
+        self.dismiss(None)
+
 class PapyriCheckerApp(App):
    
     BINDINGS = [('right,n', 'next_papyrus', 'Go to next papyrus (skip)'), 
                 ('left,N', 'prev_papyrus', 'Go to previous papyrus'),
+
                 ('C', 'mark_current_correct', 'Mark current papyrus as correct'),
                 ('I', 'mark_current_incorrect', 'Mark current papyrus as incorrect'),
                 ('c', 'mark_current_correct_and_next', 'Mark current papyrus as correct and move to next'),
                 ('i', 'mark_current_incorrect_and_next', 'Mark current papyrus as incorrect and move to next'),
+                ('u', 'mark_current_unclear', 'Mark current papyrus as unclear'),
+                ('U', 'mark_current_unclear_and_next', 'Mark current papyrus as unclear and move to next'),
+
                 ('a', 'papyrus_category_modal', 'Assign category to current papyrus'),
                 ('1', 'mark_as_epistolary', 'Mark as Epistolary Exchange and move to next'),
-                ('2', 'mark_as_objective', 'Mark as Objective Statement and move to next'),
-                ('3', 'mark_as_recording', 'Mark as Recording of Information and move to next'),
-                ('4', 'mark_as_transmission', 'Mark as Transmission of Information and move to next'),
+                ('2', 'mark_as_transmission', 'Mark as Transmission of Information and move to next'),
+                ('3', 'mark_as_objective', 'Mark as Objective Statement and move to next'),
+                ('4', 'mark_as_recording', 'Mark as Recording of Information and move to next'),
+
+                ('g', 'go_to_modal', 'Go to papyrus by index'),
+                ('G', 'go_to_unlabeled', 'Go to next unlabeled papyrus'),
                 ]
 
 
@@ -259,17 +315,18 @@ class PapyriCheckerApp(App):
         self.query_one(PapyrusViewer).set_type(GRAMMATEUS_TYPES[0])
         self.action_next_papyrus()
 
-    def action_mark_as_objective(self):
+    def action_mark_as_transmission(self):
         self.query_one(PapyrusViewer).set_type(GRAMMATEUS_TYPES[1])
         self.action_next_papyrus()
 
-    def action_mark_as_recording(self):
+    def action_mark_as_objective(self):
         self.query_one(PapyrusViewer).set_type(GRAMMATEUS_TYPES[2])
         self.action_next_papyrus()
 
-    def action_mark_as_transmission(self):
+    def action_mark_as_recording(self):
         self.query_one(PapyrusViewer).set_type(GRAMMATEUS_TYPES[3])
         self.action_next_papyrus()
+
 
     def action_prev_papyrus(self):
         self.query_one(PapyrusViewer).prev_papyrus()
@@ -283,15 +340,30 @@ class PapyriCheckerApp(App):
     def action_mark_current_incorrect(self):
         self.query_one(PapyrusViewer).mark_current_incorrect()
 
+    def action_mark_current_unclear(self):
+        self.query_one(PapyrusViewer).mark_current_unclear()
+
     def action_mark_current_correct_and_next(self):
-        self.query_one(PapyrusViewer).mark_current_correct()
+        self.action_mark_current_correct()
         self.action_next_papyrus()
 
     def action_mark_current_incorrect_and_next(self):
-        self.query_one(PapyrusViewer).mark_current_incorrect()
+        self.action_mark_current_incorrect()
+        self.action_next_papyrus()
+
+    def action_mark_current_unclear_and_next(self):
+        self.action_mark_current_unclear()
         self.action_next_papyrus()
 
 
+    def action_go_to_modal(self):
+        def modal_close(index):
+            if index is not None:
+                self.query_one(PapyrusViewer).current_papyrus_idx = index
+        self.push_screen(GoToPapyrusModal(), modal_close)
+
+    def action_go_to_unlabeled(self):
+        self.query_one(PapyrusViewer).go_to_next_unlabeled()
    
 
 if __name__=="__main__":
