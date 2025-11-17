@@ -75,11 +75,7 @@ def write_to_disk(data, filename, nlp: Language):
     db.to_disk(filename)
 
 def preprocess(terms, title, training_text, nlp: Language):
-    training_text = llama_util.initial_cleanup(training_text)
-    training_text = llama_util.strip_accents_and_breathing(training_text)
-    training_text = re.sub(r"[\[\]\(\)]", "", training_text)
-    training_text = re.sub(r"(\<gap\/\>)", " ", training_text)
-    training_text = llama_util.simplify_punctuation(training_text)
+    training_text = llama_util.minimal_maat_to_llama_input(training_text, -1)
     return training_text
     #joined_terms = " ".join(terms)
     #preprocessed_title = remove_punctuation_stopwords(title, nlp)
