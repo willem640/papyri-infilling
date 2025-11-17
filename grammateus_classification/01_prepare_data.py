@@ -1,6 +1,7 @@
 from os import environ
 import random
 import string
+import re
 
 import pymongo
 from spacy.lang.de.stop_words import STOP_WORDS
@@ -8,6 +9,8 @@ import spacy
 from spacy.language import Language
 from spacy.tokens import DocBin
 from tqdm import tqdm
+
+import helper_scripts.llama_util as llama_util
 
 # TODO reproducible test/dev/train sets, plus ensure correct distribution in test/dev/train?
 
@@ -28,7 +31,7 @@ def main():
     nlp = spacy.blank("grc")
 
     types_and_classes_preprocessed = [(preprocess(terms, title, training_text, nlp), grammateus_type)  
-                for terms, title, training_text, grammateus_type in types_and_classes]
+                for terms, title, training_text, grammateus_type in tqdm(types_and_classes)]
    
     train_data = []
     dev_data = []
@@ -72,6 +75,11 @@ def write_to_disk(data, filename, nlp: Language):
     db.to_disk(filename)
 
 def preprocess(terms, title, training_text, nlp: Language):
+    training_text = llama_util.initial_cleanup(training_text)
+    training_text = llama_util.strip_accents_and_breathing(training_text)
+    training_text = re.sub(r"[\[\]\(\)]", "", training_text)
+    training_text = re.sub(r"(\<gap\/\>)", " ", training_text)
+    training_text = llama_util.simplify_punctuation(training_text)
     return training_text
     #joined_terms = " ".join(terms)
     #preprocessed_title = remove_punctuation_stopwords(title, nlp)
