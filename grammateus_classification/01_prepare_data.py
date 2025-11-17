@@ -22,13 +22,13 @@ def main():
     
 
     types_and_classes = []
-    for papyrus in collection.find({'grammateus_type': {'$exists': True}, 'text_classes': {'$exists' : True}}, {'text_classes': 1, 'grammateus_type': 1, 'hgv_title': 1, '_id': 0}):
-       types_and_classes.append((papyrus['text_classes'], papyrus['hgv_title'], papyrus['grammateus_type']))
+    for papyrus in collection.find({'grammateus_type': {'$exists': True}, 'text_classes': {'$exists' : True}}, {'text_classes': 1, 'grammateus_type': 1, 'hgv_title': 1, 'training_text': 1, '_id': 0}):
+       types_and_classes.append((papyrus['text_classes'], papyrus['hgv_title'], papyrus['training_text'], papyrus['grammateus_type']))
 
-    nlp = spacy.blank("de")
+    nlp = spacy.blank("grc")
 
-    types_and_classes_preprocessed = [(preprocess(terms, title, nlp), grammateus_type)  
-                for terms, title, grammateus_type in types_and_classes]
+    types_and_classes_preprocessed = [(preprocess(terms, title, training_text, nlp), grammateus_type)  
+                for terms, title, training_text, grammateus_type in types_and_classes]
    
     train_data = []
     dev_data = []
@@ -71,11 +71,12 @@ def write_to_disk(data, filename, nlp: Language):
         db.add(doc)
     db.to_disk(filename)
 
-def preprocess(terms, title, nlp: Language):
-    joined_terms = " ".join(terms)
-    preprocessed_title = remove_punctuation_stopwords(title, nlp)
-    preprocessed_terms = remove_punctuation_stopwords(joined_terms, nlp)
-    return f"{preprocessed_title} {preprocessed_terms}"
+def preprocess(terms, title, training_text, nlp: Language):
+    return training_text
+    #joined_terms = " ".join(terms)
+    #preprocessed_title = remove_punctuation_stopwords(title, nlp)
+    #preprocessed_terms = remove_punctuation_stopwords(joined_terms, nlp)
+    #return f"{preprocessed_title} {preprocessed_terms}"
 
 def remove_punctuation_stopwords(text, nlp: Language):
     tokens = [token.text for token in nlp(text)]
