@@ -12,16 +12,15 @@ def main():
     client = pymongo.MongoClient()
     collection = client.get_database(mongo_database).get_collection(mongo_collection)
    
-    grammateus_tm_and_text_class = []
-
     with open(grammateus_path, newline='') as f:
         reader = csv.reader(f)
         heading = next(reader)
         tm_idx = heading.index('TM')
         type_idx = heading.index(' Type')
         for row in tqdm(reader):
-            tm_id = row[tm_idx = row[type_idx]
-            collection.update_one({'tm_id': tm_id}, {'$set': {'grammateus_type': grammateus_type}})
+            tm_id = row[tm_idx]
+            grammateus_type = row[type_idx]
+            collection.update_many({'tm_id': tm_id}, {'$set': {'grammateus_type': grammateus_type}})
 
 if __name__=="__main__":
     main()
