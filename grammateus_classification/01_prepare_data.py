@@ -24,14 +24,19 @@ def main():
     collection = client.get_database(mongo_database).get_collection(mongo_collection)
     
 
-    types_and_classes = []
-    for papyrus in collection.find({'grammateus_type': {'$exists': True}, 'text_classes': {'$exists' : True}}, {'text_classes': 1, 'grammateus_type': 1, 'hgv_title': 1, 'training_text': 1, '_id': 0}):
-       types_and_classes.append((papyrus['text_classes'], papyrus['hgv_title'], papyrus['training_text'], papyrus['grammateus_type']))
+    types_and_classes = list(collection.find(
+        {'grammateus_type': {'$exists': True}, 'text_classes': {'$exists': True}},
+        {'text_classes': 1, 'grammateus_type': 1, 'hgv_title': 1, 'training_text': 1, 'block_index': 1, 'file_id':1, '_id': 0}))
+       
 
     nlp = spacy.blank("grc")
 
-    types_and_classes_preprocessed = [(preprocess(terms, title, training_text, nlp), grammateus_type)  
-                for terms, title, training_text, grammateus_type in tqdm(types_and_classes)]
+    types_and_classes = combine_blocks(types_and_classes)
+
+    # TODO refactor key access into preprocess
+    types_and_classes_preprocessed = [
+            (preprocess(papyrus['text_classes'], papyrus['hgv_title'], papyrus['training_text'], nlp), papyrus['grammateus_type'])  
+            for papyrus in tqdm(types_and_classes)]
    
     train_data = []
     dev_data = []
@@ -74,9 +79,39 @@ def write_to_disk(data, filename, nlp: Language):
         db.add(doc)
     db.to_disk(filename)
 
+def combine_blocks(papyri_and_classes):
+    #types_and_classes.append((papyrus['text_classes'], papyrus['hgv_title'], papyrus['training_text'], papyrus['grammateus_type']))
+
+    first_blocks = [(papyrus, []) for papyrus in papyri_and_classes if papyrus['block_index'] == 1]
+    other_blocks = [papyrus for papyrus in papyri_and_classes if papyrus['block_index'] > 1]
+
+    for other_block in other_blocks:
+        for i in range(len(first_blocks)):
+            if first_blocks[i][0]['file_id'] == other_block['file_id']:
+                first_blocks[i][1].append(other_block)
+
+
+    combined_blocks = []
+    for first_block, next_blocks in first_blocks:
+        if len(next_blocks) == 0:
+            combined_blocks.append(first_block)
+            continue
+
+        next_blocks.sort(key=lambda papyrus: papyrus['block_index'])
+        next_blocks_text = [block['training_text'] for block in next_blocks]
+
+        combined_text = "\n\n".join([first_block['training_text'], *next_blocks_text])
+        combined_block = first_block
+        combined_block['training_text'] = combined_text
+        combined_blocks.append(combined_block)
+
+    return combined_blocks
+
+
+
 def preprocess(terms, title, training_text, nlp: Language):
-    #training_text = re.sub(r"[\[\]\(\)]", "", training_text)
-    #training_text = re.sub(r"(\<gap\/\>)|(\.{2,})", " ", training_text)
+    training_text = re.sub(r"[\[\]\(\)]", "", training_text)
+    training_text = re.sub(r"(\<gap\/\>)|(\.{2,})", " ", training_text)
     return training_text
     #joined_terms = " ".join(terms)
     #preprocessed_title = remove_punctuation_stopwords(title, nlp)
