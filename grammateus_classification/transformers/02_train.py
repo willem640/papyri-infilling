@@ -15,7 +15,7 @@ def main():
     data_collator = DataCollatorWithPadding(tokenizer=tokenizer)
 
     label2id = {label: GRAMMATEUS_TYPES.index(label) for label in GRAMMATEUS_TYPES}
-    id2label = {idno: label for label, idno in label2id}
+    id2label = {idno: label for label, idno in label2id.items()}
     
     model = AutoModelForSequenceClassification.from_pretrained('bowphs/GreBerta', num_labels=len(GRAMMATEUS_TYPES), id2label=id2label, label2id=label2id)
 
