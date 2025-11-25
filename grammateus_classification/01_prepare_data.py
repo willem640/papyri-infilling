@@ -32,6 +32,8 @@ def main():
     nlp = spacy.blank("grc")
 
     types_and_classes = combine_blocks(types_and_classes)
+    #types_and_classes = [p for p in types_and_classes if p['block_index'] == 1]
+    
 
     # TODO refactor key access into preprocess
     types_and_classes_preprocessed = [
@@ -80,8 +82,6 @@ def write_to_disk(data, filename, nlp: Language):
     db.to_disk(filename)
 
 def combine_blocks(papyri_and_classes):
-    #types_and_classes.append((papyrus['text_classes'], papyrus['hgv_title'], papyrus['training_text'], papyrus['grammateus_type']))
-
     first_blocks = [(papyrus, []) for papyrus in papyri_and_classes if papyrus['block_index'] == 1]
     other_blocks = [papyrus for papyrus in papyri_and_classes if papyrus['block_index'] > 1]
 
