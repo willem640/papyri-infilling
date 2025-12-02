@@ -31,8 +31,8 @@ def main():
 
     nlp = spacy.blank("grc")
 
-    types_and_classes = combine_blocks(types_and_classes)
-    #types_and_classes = [p for p in types_and_classes if p['block_index'] == 1]
+    #types_and_classes = combine_blocks(types_and_classes)
+    types_and_classes = [p for p in types_and_classes if p['block_index'] == 1]
     
 
     # TODO refactor key access into preprocess
@@ -110,8 +110,8 @@ def combine_blocks(papyri_and_classes):
 
 
 def preprocess(terms, title, training_text, nlp: Language):
-    training_text = re.sub(r"[\[\]\(\)]", "", training_text)
-    training_text = re.sub(r"(\<gap\/\>)|(\.{2,})", " ", training_text)
+    #training_text = re.sub(r"[\[\]\(\)]", "", training_text)
+    #training_text = re.sub(r"(\<gap\/\>)|(\.{2,})", " ", training_text)
     return training_text
     #joined_terms = " ".join(terms)
     #preprocessed_title = remove_punctuation_stopwords(title, nlp)
