@@ -32,7 +32,7 @@ def main():
         predictions.extend(predictions_batch['logits'])
 
 
-    predictions = [tensor.cpu() for tensor in predictions]
+    predictions = [tensor.cpu().detach() for tensor in predictions]
 
     predictions_and_labels = (predictions, list(data['test']['label']))
 
