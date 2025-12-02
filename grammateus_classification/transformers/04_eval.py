@@ -4,7 +4,7 @@ from datasets import load_dataset
 import evaluate
 import numpy as np
 
-MODEL_PATH = "models/model_concat_best/checkpoint-1000"
+MODEL_PATH = "model/checkpoint-1000"
 GRAMMATEUS_TYPES = ["Epistolary Exchange", "Transmission of Information", "Objective Statement", "Recording of Information"]
 
 def main():
@@ -29,13 +29,14 @@ def main():
     predictions = []
     for batch in loader:
         predictions_batch = model(**batch)
-        predictions.extend(predictions_batch)
+        predictions.extend(predictions_batch['logits'])
 
-    for prediction in predictions:
-        print(prediction)
-        exit()
 
-    metrics = compute_metrics(predictions)
+    predictions = [tensor.cpu() for tensor in predictions]
+
+    predictions_and_labels = (predictions, list(data['test']['label']))
+
+    metrics = compute_metrics(predictions_and_labels)
 
     print(f"Eval: {metrics}")
 
