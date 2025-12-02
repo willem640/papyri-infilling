@@ -1,0 +1,35 @@
+method: bayes
+metric:
+  goal: maximize
+  name: eval/f1
+
+command:
+  - ${env}
+  - ${interpreter}
+  - 02_sweep.py
+parameters:
+  patience:
+    values:
+      - 5
+      - 1000000
+  learning_rate:
+    distribution: log_uniform_values
+    min: 1e-6
+    max: 1e-4
+  min_learning_ratio:
+    distribution: log_uniform_values
+    min: 1e-3
+    max: 0.5
+  max_steps:
+    values:
+      - 500
+      - 1000
+      - 1500
+  dropout:
+      values:
+        - 0
+        - 0.1
+        - 0.2
+        - 0.3
+        - 0.4
+    
