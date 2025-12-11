@@ -10,7 +10,7 @@ spacy.prefer_gpu()
 def main():
     classifier = spacy.load('model/model-best')
     classifier_input = []
-    with open('03_classifier_input') as f:
+    with open('03_classifier_input.json') as f:
         classifier_input = json.load(f)
 
     all_cats = []
