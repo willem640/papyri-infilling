@@ -20,7 +20,7 @@ def main():
 
     first_blocks_processed = [{'grammateus_type': grammateus_type, **papyrus} for grammateus_type, papyrus in zip(all_cats, first_blocks)]
 
-    combined_blocks = prepare_data.combine_blocks([*first_blocks_processed, *other_blocks]
+    combined_blocks = prepare_data.combine_blocks([*first_blocks_processed, *other_blocks])
     
     with open('papyri_with_classes.json', 'w') as f:
         json.dump(combined_blocks, f)
