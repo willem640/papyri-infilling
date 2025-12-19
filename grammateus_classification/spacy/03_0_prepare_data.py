@@ -21,7 +21,7 @@ def main():
     collection = client.get_database(mongo_database).get_collection(mongo_collection)
    
     all_unlabeled_papyri = list(collection.find({'text_classes' : {'$exists': 1}, 'grammateus_type': {'$exists': 0}}, 
-                                                {'training_text': 1, 'text_classes': 1, 'hgv_title': 1, 'id': 1, 'tm_id':1,'block_index' : 1, '_id':0}))
+                                                {'training_text': 1, 'text_classes': 1, 'hgv_title': 1, 'id': 1, 'tm_id':1,'block_index' : 1,'file_id': 1, '_id':0}))
 
     first_blocks = [block for block in all_unlabeled_papyri if block['block_index'] == 1]
     other_blocks = [block for block in all_unlabeled_papyri if block['block_index'] != 1]
