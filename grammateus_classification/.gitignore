@@ -3,3 +3,4 @@ models/
 model/
 extra/
 helper_scripts/
+*.json
