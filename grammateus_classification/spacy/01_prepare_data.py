@@ -11,10 +11,11 @@ from spacy.tokens import DocBin
 from tqdm import tqdm
 
 import helper_scripts.llama_util as llama_util
-
-# TODO reproducible test/dev/train sets, plus ensure correct distribution in test/dev/train?
+import helper_scripts.data_augmentation as data_augmentation
 
 GRAMMATEUS_TYPES = ["Epistolary Exchange", "Objective Statement", "Recording of Information", "Transmission of Information"]
+
+ENABLE_DATA_AUGMENT = True
 
 def main():
     mongo_database = environ.get("MONGO_DATABASE", "papyri")
@@ -39,6 +40,12 @@ def main():
     types_and_classes_preprocessed = [
             (preprocess(papyrus['text_classes'], papyrus['hgv_title'], papyrus['training_text'], nlp), papyrus['grammateus_type'])  
             for papyrus in tqdm(types_and_classes)]
+
+    augment_p = 0.2
+
+    types_and_classes_preprocessed = types_and_classes_preprocessed * int(1 / augment_p)
+    types_and_classes_preprocessed = [(data_augmentation.randomly_remove_characters(text, augment_p), label)
+                    for text, label in types_and_classes_preprocessed]
    
     train_data = []
     dev_data = []
