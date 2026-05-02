@@ -66,6 +66,8 @@ def main():
         train_data = train_data * int(1 / augment_p)
         train_data = [(data_augmentation.randomly_remove_characters(text, augment_p), label)
                         for text, label in tqdm(train_data)]
+
+    random.shuffle(train_data)
  
     print(f"Train (after augmentation): {len(train_data)}")
 
