@@ -41,12 +41,7 @@ def main():
             (preprocess(papyrus['text_classes'], papyrus['hgv_title'], papyrus['training_text'], nlp), papyrus['grammateus_type'])  
             for papyrus in tqdm(types_and_classes)]
 
-    augment_p = 0.2
-
-    types_and_classes_preprocessed = types_and_classes_preprocessed * int(1 / augment_p)
-    types_and_classes_preprocessed = [(data_augmentation.randomly_remove_characters(text, augment_p), label)
-                    for text, label in types_and_classes_preprocessed]
-   
+  
     train_data = []
     dev_data = []
     test_data = []
@@ -61,7 +56,19 @@ def main():
         test_data.extend(test)
 
 
-    print(f"Total: {len(types_and_classes_preprocessed)} - Train:  {len(train_data)} - Dev: {len(dev_data)} - Test: {len(test_data)}")
+
+
+
+    print(f"Total (before augmentation): {len(types_and_classes_preprocessed)} - Train:  {len(train_data)} - Dev: {len(dev_data)} - Test: {len(test_data)}")
+    if ENABLE_DATA_AUGMENT:
+        augment_p = 0.2
+
+        train_data = train_data * int(1 / augment_p)
+        train_data = [(data_augmentation.randomly_remove_characters(text, augment_p), label)
+                        for text, label in tqdm(train_data)]
+ 
+    print(f"Train (after augmentation): {len(train_data)}")
+
     write_to_disk(train_data, "train.spacy", nlp)
     write_to_disk(dev_data, "dev.spacy", nlp)
     write_to_disk(test_data, "test.spacy", nlp)
