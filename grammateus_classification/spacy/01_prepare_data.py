@@ -15,7 +15,7 @@ import helper_scripts.data_augmentation as data_augmentation
 
 GRAMMATEUS_TYPES = ["Epistolary Exchange", "Objective Statement", "Recording of Information", "Transmission of Information"]
 
-ENABLE_DATA_AUGMENT = True
+ENABLE_DATA_AUGMENT = False
 
 def main():
     mongo_database = environ.get("MONGO_DATABASE", "papyri")
