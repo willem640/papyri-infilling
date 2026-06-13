@@ -50,10 +50,6 @@ The database should have the following format for each record:
             d: uint
         }
     }
-
-
 }
-
-
 ```
 
