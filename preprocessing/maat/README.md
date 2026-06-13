@@ -11,7 +11,7 @@ I recommend MongoDB compass for inspecting and/or downloading the data.
 You should clone papyri/IDP.data in this folder and put maat.json here as well. Then, run the scripts in order to insert the various metadata into the database. It will only put DdbDP papyri in there. It is reasonably complete but may miss some records if the EpiDoc is irregular.
 
 The database should have the following format for each record:
-```json
+```
 {
     // the following fields are from MAAT:
     corpus_id: string, // always DDbDP
